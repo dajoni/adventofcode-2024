@@ -59,6 +59,14 @@ fn read_columns<P: AsRef<Path>>(filename: P) -> io::Result<ColumnData> {
     })
 }
 
+fn calculate_distances(column_data: &ColumnData) -> Vec<i32> {
+    let mut distances = Vec::with_capacity(column_data.num_items);
+    for i in 0..column_data.num_items {
+        distances.push((column_data.columns[0][i] - column_data.columns[1][i]).abs());
+    }
+    distances
+}
+
 fn calculate_similarities(column_data: &ColumnData) -> Vec<i32> {
     let mut similarities = Vec::with_capacity(column_data.num_items);
     
@@ -97,9 +105,12 @@ fn main() {
             for col in column_data.columns.iter_mut() {
                 col.sort_unstable();
             }
+            let distances = calculate_distances(&column_data);
+            let sum: i32 = distances.iter().sum();
+            println!("(Problem 1) Sum of distances: {}", sum);
             let similarities = calculate_similarities(&column_data);
             let sum: i32 = similarities.iter().sum();
-            println!("Sum of similarity: {}", sum);
+            println!("(Problem 2) Sum of similarity: {}", sum);
         }
         Err(error) => {
             eprintln!("Error processing file: {}", error);

@@ -6,5 +6,6 @@ edition = "2021"
 [dependencies]
 
 [[bin]]
-name = "problem1"
-path = "problem1.rs"
+name = "problem"
+path = "problem.rs"
+
