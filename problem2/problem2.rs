@@ -13,13 +13,10 @@ struct ColumnData {
     num_items: usize,
 }
 
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where P: AsRef<Path> {
+fn read_columns<P: AsRef<Path>>(filename: P) -> io::Result<ColumnData> {
     let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
-}
-
-fn split_columns(lines: io::Lines<io::BufReader<File>>) -> io::Result<ColumnData> {
+    let lines = io::BufReader::new(file).lines();
+    
     let mut columns: Vec<Vec<i32>> = vec![Vec::new(), Vec::new()];
     let mut total_items = 0;
     let expected_columns = 2;
@@ -91,7 +88,7 @@ fn main() {
         std::process::exit(1);
     }
 
-    match read_lines(&args[1]).and_then(split_columns) {
+    match read_columns(&args[1]) {
         Ok(mut column_data) => {
             println!("found {} columns with {} items each", 
                 column_data.num_columns, 
