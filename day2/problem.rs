@@ -10,32 +10,24 @@ mod test_is_safe_dampened;
 fn read_lines<P: AsRef<Path>>(filename: P) -> io::Result<Vec<Vec<i32>>> {
     let file = File::open(filename)?;
     let lines = io::BufReader::new(file).lines();
+    
+    let mut columns = Vec::with_capacity(1000);
 
-    let mut columns: Vec<Vec<i32>> = Vec::with_capacity(1000);
-
-    for (line_number, line) in lines.enumerate() {
-        let line = line?;
-        let values: Vec<&str> = line.split_whitespace().collect();
-        let mut line_values: Vec<i32> = Vec::with_capacity(values.len());
-
-        for (value_number, value) in values.iter().enumerate() {
-            let int = value.parse::<i32>().map_err(|e| {
-                io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    format!(
-                        "Line {}, value {}: {}",
-                        line_number + 1,
-                        value_number + 1,
-                        e
-                    ),
-                )
-            })?;
-            line_values.push(int);
-        }
-        // if line_values[0] > line_values[1] && line_values[1] <= line_values[2] {
-        //     println!("Line from file: {}, converted lines: {:?}", line, line_values);
-        // }
-        columns.push(line_values);
+    for (line_num, line) in lines.enumerate() {
+        let numbers = line?
+            .split_whitespace()
+            .enumerate()
+            .map(|(val_num, val)| {
+                val.parse().map_err(|e| {
+                    io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        format!("Line {}, value {}: {}", line_num + 1, val_num + 1, e)
+                    )
+                })
+            })
+            .collect::<io::Result<Vec<i32>>>()?;
+            
+        columns.push(numbers);
     }
 
     Ok(columns)
@@ -113,18 +105,14 @@ fn main() {
     match read_lines(&args[1]) {
         Ok(lines) => {
             println!("found {} rows", lines.len());
-            let safe_lines: Vec<bool> = lines
-                .iter()
-                .map(|line| is_safe(line))
-                .filter(|safe| *safe)
-                .collect();
-            println!("Found {} safe lines", safe_lines.len());
-            let safe_dampened_lines: Vec<bool> = lines
-                .iter()
-                .map(|line| is_safe_dampened(line))
-                .filter(|safe| *safe)
-                .collect();
-            println!("Found {} safe dampened lines", safe_dampened_lines.len());
+            let safe_count = lines.iter()
+                .filter(|line| is_safe(line))
+                .count();
+            println!("Found {} safe lines", safe_count);
+            let safe_dampened_count = lines.iter()
+                .filter(|line| is_safe_dampened(line))
+                .count();
+            println!("Found {} safe dampened lines", safe_dampened_count);
         }
         Err(error) => {
             eprintln!("Error processing file: {}", error);
