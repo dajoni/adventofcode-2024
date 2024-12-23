@@ -50,10 +50,9 @@ fn adheres_to_conditions(a: i32, b: i32, ascending: bool) -> bool {
         return a > b && a - b <= 3;
     }
 }
-
 fn is_safe_internal(numbers: &Vec<i32>) -> bool {
     if numbers.len() < 2 {
-        return false; // A single number or empty vector is considered unsafe
+        return false;
     }
 
     let ascending = match is_ascending(numbers[0], numbers[1]) {
@@ -61,18 +60,7 @@ fn is_safe_internal(numbers: &Vec<i32>) -> bool {
         None => return false,
     };
 
-    for i in 1..numbers.len() {
-        // println!(
-        //     "i: {}, numbers[i-1]: {}, numbers[i]: {}",
-        //     i,
-        //     numbers[i - 1],
-        //     numbers[i]
-        // );
-        if !adheres_to_conditions(numbers[i - 1], numbers[i], ascending) {
-            return false;
-        }
-    }
-    true
+    numbers.windows(2).all(|pair| adheres_to_conditions(pair[0], pair[1], ascending))
 }
 
 pub fn is_safe(numbers: &Vec<i32>) -> bool {
